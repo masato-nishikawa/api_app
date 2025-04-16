@@ -18,7 +18,7 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
       ),
-      home: const MyHomePage(title: 'Flutter Demo Home Page'),
+      home: const MyHomePage(title: 'API通信アプリのデモ'),
     );
   }
 }
@@ -34,7 +34,8 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   String apiText = 'api通信をしていません。';
-  List<dynamic> data = [];
+  // User変更しないとだめ？
+  List<User> data = [];
 
   Future<void> _incrementCounter() async {
     setState(() {
@@ -46,20 +47,26 @@ class _MyHomePageState extends State<MyHomePage> {
       final url = Uri.parse('http://$ipAddress:3000/api/person');
       final response = await http.get(url);
 
+    // レスポンスが200の場合、await を使って非同期処理を実行
+    if (response.statusCode == 200) {
+      // setStateの中でawaitは使えない
+      final List<User> users = await UserLoader.loadListFromAssets(response.body);
+      // 非同期処理後に結果を setState で更新
       setState(() {
-        if (response.statusCode == 200) {
-          apiText = '通信が完了しました。';
-          data = jsonDecode(response.body);
-        } else {
-          apiText = 'エラー: ${response.statusCode}';
-        }
+        apiText = '通信が完了しました。';
+        data = users;
       });
-    } catch (e) {
+    } else {
       setState(() {
-        apiText = '通信エラー: $e';
+        apiText = 'エラー: ${response.statusCode}';
       });
     }
+  } catch (e) {
+    setState(() {
+      apiText = '通信エラー: $e';
+    });
   }
+}
 
   @override
   Widget build(BuildContext context) {
@@ -95,7 +102,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
 
 class PersonList extends StatelessWidget {
-  final List<dynamic> personInfo ;
+  final List<User> personInfo ;
   const PersonList({super.key, required this.personInfo});
 
   @override
@@ -111,9 +118,9 @@ class PersonList extends StatelessWidget {
             return ListTile(
               title: Column(
                 children: [
-                  Text('ID:${person['id'].toString()}'),
-                  Text('名前:${person['name']}'),
-                  Text('e-mail:${person['email']}'),
+                  Text('ID:${person.id.toString()}'),
+                  Text('名前:${person.name}'),
+                  Text('e-mail:${person.email}'),
                 ],
               ),
         );
@@ -122,9 +129,10 @@ class PersonList extends StatelessWidget {
   }
 }
 
-// class UserLoader {
-//   // List=>dynamicでない・・・
-//   static Future<List<User>> loadListFromAssets() async{
-    
-//   }
-// }
+class UserLoader {
+  // List=>dynamicでない・・・
+  static Future<List<User>> loadListFromAssets(String jsonString) async {
+    final jsonList = json.decode(jsonString) as List<dynamic>;
+    return jsonList.map((e) => User.fromJson(e)).toList();
+  }
+}
