@@ -1,7 +1,8 @@
 import 'dart:convert';
-
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+// 自作の freezed クラスをインポート
+import 'models/user.dart'; 
 
 void main() {
   runApp(const MyApp());
@@ -120,3 +121,10 @@ class PersonList extends StatelessWidget {
     );
   }
 }
+
+// class UserLoader {
+//   // List=>dynamicでない・・・
+//   static Future<List<User>> loadListFromAssets() async{
+    
+//   }
+// }
