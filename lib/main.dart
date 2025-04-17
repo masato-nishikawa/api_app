@@ -58,8 +58,8 @@ class MyHomePage extends ConsumerWidget {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () async {
-          // TODO: refreshで警告が出ている
-          ref.refresh(userListProvider);
+          // 値の変更がない場合はrefreshでなくinvalidateを使う
+          ref.invalidate(userListProvider);
         },
         tooltip: 'API通信',
         child: const Icon(Icons.swap_vert),
@@ -67,8 +67,6 @@ class MyHomePage extends ConsumerWidget {
     );
   }
 }
-
-
 
 
 class PersonList extends StatelessWidget {
